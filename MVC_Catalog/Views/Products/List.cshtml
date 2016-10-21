@@ -1,0 +1,19 @@
+﻿@model MVC_Catalog.Models.Products
+
+@*@{
+    ViewBag.Title = "List";
+}*@
+
+<h2>List of products</h2>
+
+<div id="Products">
+	<dl>
+		@foreach (MVC_Catalog.Models.Product p in Model.ProductsList)
+		{
+			<dt>@p.ProductName.ToString()</dt>
+			<dd>@p.ProductDescript.ToString()</dd>
+			<dd>Price is: @p.ProductPrice.ToString() ₪</dd>
+		}
+	</dl>
+	<p>@Html.ActionLink("Back to Categories List", "Index", "Categories")</p>
+</div>

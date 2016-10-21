@@ -1,0 +1,20 @@
+﻿@model MVC_Catalog.Models.Categories
+
+@{
+	ViewBag.Title = "Categories";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="CategoriesList">
+	<h2>Categories List</h2>
+	<ul>
+		@foreach (MVC_Catalog.Models.Category c in Model.CategoriesList)
+		{
+			<li>@Html.ActionLink(@c.CategoryName.ToString(), "List" + "/" + @c.CategoryName.ToString().Replace(" ", ""), "Products")</li>
+		}
+		
+	</ul>
+</div>
+
+
+@*@Html.ActionLink("Link Text", "Action", "Controller")*@
