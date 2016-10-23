@@ -6,105 +6,82 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
 
-namespace MVC_Catalog.DA	
+namespace MVC_Catalog.DA
 {
 	public class StartupDB_Load
 	{
-		public static void LoadCategories()
+		internal static void LoadDataToDB()
 		{
-			// Reading data from TXT
-			string[] arr_Categoies = System.IO.File.ReadAllLines(@"D:\Learning\MSDN_course\HomeWork\MVC\MVC_Catalog\MVC_Catalog\DA\Categories.txt");
-			//string[] arr_Categoies = System.IO.File.ReadAllLines(System.Configuration.ConfigurationManager.AppSettings["CATEGORIES"]); - not working
+			int CategoryId = 0;
+
+			// Reading data from files	
+			string[] arr_Products1 = System.IO.File.ReadAllLines(System.Configuration.ConfigurationManager.AppSettings["PRODUCTS_1"]);
 
 			// Openning connection to DB
-			System.Data.SqlClient.SqlConnection conn = new System.Data.SqlClient.SqlConnection();
+			System.Data.SqlClient.SqlConnection conn = DA.DataAccess.OpenConnection();
+			System.Data.SqlClient.SqlCommand command = DA.DataAccess.getCommand(conn);
+
+			// Cleanning DB Tables
+			DA.DataAccess.CleanDB(command, "[dbo].[Categories]");
+			DA.DataAccess.CleanDB(command, "[dbo].[ProductsList1]");
 			
-			conn.ConnectionString = @"Data Source = MARINA-W-PC\SQLEXPRESS; Initial Catalog = Catalog_MVC_DB; User ID = sa; Password = 0525952710;";
-			conn.Open();
-
-			System.Data.SqlClient.SqlCommand command = new System.Data.SqlClient.SqlCommand();//insert, update, delete
-			command.CommandType = System.Data.CommandType.Text;
-			command.Connection = conn;
-
-			// Cleanning DB
-			//command.CommandText = @"DELETE FROM [dbo].[Categories]"; // cleans all fields but not an Ids
-			command.CommandText = @"TRUNCATE TABLE [dbo].[Categories]"; //cleans all fields including Ids
-			command.ExecuteNonQuery();
-
-			// Filling DB from an arr_Categories
-			foreach (string s in arr_Categoies)
+			// Filling DB from an arr_Products1
+			foreach (string s in arr_Products1)
 			{
 				if (s != string.Empty)
 				{
-					command.CommandText = @"INSERT INTO[dbo].[Categories] ([CategoryName])VALUES('" + s + "')";
-					command.ExecuteNonQuery();
-				}
-			}
-			conn.Close();
-
-			#region USING - not working - the connection is closed...
-			//using (System.Data.SqlClient.SqlConnection conn = new System.Data.SqlClient.SqlConnection())
-			//{
-			//	conn.ConnectionString = @"Data Source = MARINA-W-PC\SQLEXPRESS; Initial Catalog = Catalog_MVC_DB; User ID = sa; Password = 0525952710;";
-			//	System.Data.SqlClient.SqlCommand command = new System.Data.SqlClient.SqlCommand();//insert, update, delete
-			//	command.CommandType = System.Data.CommandType.Text;
-			//	command.Connection = conn;
-
-			//	command.CommandText = @"DELETE FROM [dbo].[Categories]";
-
-			//	//not working - the connection is closed...
-			//	command.ExecuteNonQuery();
-
-			//	foreach (string s in arr_Categoies)
-			//	{
-			//		if (s != string.Empty)
-			//		{
-			//			command.CommandText = @"INSERT INTO[dbo].[Categories] ([CategoryName])VALUES('" + s + "')";
-			//			command.ExecuteNonQuery();
-			//		}
-			//	}
-			//} 
-			#endregion
-
-		}
-
-		public static void LoadProducts()
-		{
-			// Reading data from CSV
-			string[] arr_Products = System.IO.File.ReadAllLines(@"D:\Learning\MSDN_course\HomeWork\MVC\MVC_Catalog\MVC_Catalog\DA\Products.csv");
-
-
-			// Openning connection to DB
-			System.Data.SqlClient.SqlConnection conn = new System.Data.SqlClient.SqlConnection();
-
-			conn.ConnectionString = @"Data Source = MARINA-W-PC\SQLEXPRESS; Initial Catalog = Catalog_MVC_DB; User ID = sa; Password = 0525952710;";
-			conn.Open();
-
-			System.Data.SqlClient.SqlCommand command = new System.Data.SqlClient.SqlCommand();
-			command.CommandType = System.Data.CommandType.Text;
-			command.Connection = conn;
-
-			// Cleanning DB
-			//command.CommandText = @"DELETE FROM [dbo].[ProductsList]"; // cleans all fields but not an Ids
-			command.CommandText = @"TRUNCATE TABLE [dbo].[ProductsList]";  //cleans all fields including Ids
-			command.ExecuteNonQuery();
-			command.ExecuteNonQuery();
-
-			// Filling DB from an arr_Categories
-			foreach (string s in arr_Products)
-			{
-				if (s != string.Empty)
-				{
+					// Splitting record line to fields
 					string[] Record = s.Split(';');
-					command.CommandText = @"INSERT INTO[dbo].[ProductsList] 
-											([ProductName], [ProductDescript], [ProductPrice], [CategoryID])
+
+					string categoryName = Record[3];
+					string categoryURL = categoryName.Replace(" ", "");
+					
+					CategoryId = GetCategoryId(command, categoryName);
+
+					// Checking Categories Table for existance of Category Name and receiving Id of the category if exists 
+					// or NULL if result is empty					
+					if (CategoryId == 0) // First record in Categories Table or Category doesn't exist
+					{
+						SqlDataAdapter adapter = new SqlDataAdapter();
+						adapter.InsertCommand = new SqlCommand("INSERT INTO [dbo].[Categories]([CategoryName])VALUES('" + categoryName + "'); SELECT id FROM [dbo].[Categories] WHERE id = SCOPE_IDENTITY();", conn);
+
+						SqlDataReader reader = adapter.InsertCommand.ExecuteReader();
+
+						while(reader.Read())
+						{
+							CategoryId = Convert.ToInt32(reader["id"]);
+						}
+
+						reader.Close();						
+					}
+					
+					// Adding Product to Products Table
+					command.CommandText = @"INSERT INTO [dbo].[ProductsList1] 
+											([ProductName], [ProductDescript], [ProductPrice], [CategoryID], [CategoryURL])
 											VALUES
-											('" + Record[0] + "', '" + Record[1] + "', " + Record[2] + ", '" + Record[3] + "')";
+											('" + Record[0] + "', '" + Record[1] + "', '" + Record[2] + "', '" + CategoryId + "', '" + categoryURL + "')";
+
 					command.ExecuteNonQuery();
 				}
 			}
 
 			conn.Close();
 		}
+
+		private static int GetCategoryId(SqlCommand command, string categoryName)
+		{
+			int id = 0;
+			string sql = @"SELECT [id] FROM [dbo].[Categories] WHERE [CategoryName] = '" + categoryName + "';";
+
+			SqlDataAdapter adapter = new SqlDataAdapter(sql, command.Connection);
+			SqlDataReader reader = adapter.SelectCommand.ExecuteReader(); 
+			while (reader.Read())
+			{
+				id = Convert.ToInt32(reader["id"].ToString());
+			}
+			reader.Close();
+
+			return id;
+		}	
 	}
 }

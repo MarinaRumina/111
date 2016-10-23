@@ -15,22 +15,8 @@ namespace MVC_Catalog.Controllers
 
 			return View(Products);
 		}
-
-
-
-		// GET: Products/Details/5
-		public ActionResult Details(int id)
-		{
-			return View();
-		}
-
-		// GET: Products/Create
-		public ActionResult Create()
-		{
-			return View();
-		}
-		
-		// POST: Products/[id]
+				
+		// GET: Products/[id]
 		[HttpGet]
 		public ActionResult List(string category)
 		{
@@ -45,11 +31,23 @@ namespace MVC_Catalog.Controllers
 				Models.Products Products = new Models.Products();
 				return View(Products);
 			}
-
 			
-
-			//return View(Products);
 		}
+
+
+
+		// GET: Products/Details/5
+		public ActionResult Details(int id)
+		{
+			return View();
+		}
+
+		// GET: Products/Create
+		public ActionResult Create()
+		{
+			return View();
+		}
+
 
 		// POST: Products/Create
 		[HttpPost]

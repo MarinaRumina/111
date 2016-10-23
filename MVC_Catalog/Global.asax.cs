@@ -17,8 +17,7 @@ namespace MVC_Catalog
 			RouteConfig.RegisterRoutes(RouteTable.Routes);
 			BundleConfig.RegisterBundles(BundleTable.Bundles);
 
-			DA.StartupDB_Load.LoadCategories();
-			DA.StartupDB_Load.LoadProducts();
+			DA.StartupDB_Load.LoadDataToDB();
 		}
 	}
 }
