@@ -284,7 +284,6 @@
     <Content Include="Views\Categories\index.cshtml" />
     <Content Include="Views\Products\index.cshtml" />
     <Content Include="Views\Products\List.cshtml" />
-    <Content Include="Views\Shared\_List.cshtml" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
