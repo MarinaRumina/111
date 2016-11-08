@@ -20,14 +20,8 @@ namespace MVC_Catalog.Models
 		public List<Category> FillCategories()
 		{
 			// Openning connection to DB
-			System.Data.SqlClient.SqlConnection conn = new System.Data.SqlClient.SqlConnection();
-
-			conn.ConnectionString = @"Data Source = MARINA-W-PC\SQLEXPRESS; Initial Catalog = Catalog_MVC_DB; User ID = sa; Password = 0525952710;";
-			conn.Open();
-
-			System.Data.SqlClient.SqlCommand command = new System.Data.SqlClient.SqlCommand();//insert, update, delete
-			command.CommandType = System.Data.CommandType.Text;
-			command.Connection = conn;
+			System.Data.SqlClient.SqlConnection conn = DA.DataAccess.OpenConnection();
+			System.Data.SqlClient.SqlCommand command = DA.DataAccess.getCommand(conn);
 
 			// read data
 			command.CommandText = "select * from [dbo].[CATEGORIES]";

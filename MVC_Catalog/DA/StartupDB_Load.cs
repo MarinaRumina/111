@@ -39,7 +39,7 @@ namespace MVC_Catalog.DA
 					CategoryId = GetCategoryId(command, categoryName);
 
 					// Checking Categories Table for existance of Category Name and receiving Id of the category if exists 
-					// or NULL if result is empty					
+								
 					if (CategoryId == 0) // First record in Categories Table or Category doesn't exist
 					{
 						SqlDataAdapter adapter = new SqlDataAdapter();
